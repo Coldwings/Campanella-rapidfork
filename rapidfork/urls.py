@@ -4,4 +4,5 @@ import rapidfork.views.index as index
 
 urls = [
     (r'^/$', index.MainHandler),
+    (r'^/api/demo', index.APIDemoHandler),
 ]
