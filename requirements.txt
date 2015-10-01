@@ -1,3 +1,4 @@
+six
 Pillow==2.9.0
 tornado==4.2.1
 wheel==0.24.0
