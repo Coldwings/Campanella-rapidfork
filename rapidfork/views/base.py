@@ -1,4 +1,7 @@
 # coding:utf-8
+from datetime import datetime
+import decimal
+import json
 import six
 import logging
 import traceback
@@ -6,12 +9,24 @@ from tornado import escape
 from tornado.web import RequestHandler, HTTPError
 
 
+def tojson(data, ensure_ascii=True, default=False, **kwargs):
+    def serializable(obj):
+        if isinstance(obj, decimal.Decimal):
+            return float(obj)
+        elif isinstance(obj, datetime):
+            return obj.strftime("%Y-%m-%d %H:%M:%S")
+        raise TypeError
+
+    _default = serializable if default else None
+    return json.dumps(data, ensure_ascii=ensure_ascii, default=_default, separators=(',', ':'), **kwargs).replace("</", "<\\/")
+
+
 class RESTfulHandler(RequestHandler):
     def data_received(self, chunk):
         pass
 
     def check_xsrf_cookie(self):
-        # RESTful 禁用 XSRF 保护机制
+        """ RESTful 禁用 XSRF 保护机制"""
         pass
 
     def finish(self, chunk=None, message=None):
@@ -25,12 +40,12 @@ class RESTfulHandler(RequestHandler):
         if callback:
             self.set_header("Content-Type", "application/x-javascript")
             if isinstance(chunk, dict):
-                chunk = escape.json_encode(chunk)
+                chunk = tojson(chunk, default=True, ensure_ascii=False)
             setattr(self, '_write_buffer', [callback, "(", chunk, ")"] if chunk else [])
             super(RESTfulHandler, self).finish()
         else:
             self.set_header("Content-Type", "application/json; charset=UTF-8")
-            super(RESTfulHandler, self).finish(escape.json_encode(chunk))
+            super(RESTfulHandler, self).finish(tojson(chunk, default=True, ensure_ascii=False))
 
     def write_error(self, status_code, **kwargs):
         """覆盖自定义错误."""
@@ -80,7 +95,7 @@ class RESTfulHTTPError(HTTPError):
         self._set_message(message, ["error", "content"])
         if self.error_detail:
             message["error"]["detail"] = self.error_detail
-        return escape.json_encode(message)
+        return tojson(message, default=True, ensure_ascii=False)
 
     def _set_message(self, err, names):
         for name in names:
