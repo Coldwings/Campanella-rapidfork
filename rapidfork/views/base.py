@@ -26,7 +26,7 @@ class RESTfulHandler(RequestHandler):
         pass
 
     def check_xsrf_cookie(self):
-        """ RESTful 禁用 XSRF 保护机制"""
+        """ RESTful 禁用 XSRF 保护机制 """
         pass
 
     def finish(self, chunk=None, message=None):
@@ -66,7 +66,7 @@ class RESTfulHandler(RequestHandler):
             if debug:
                 e.error["exception"] = exception
             self.clear()
-            self.set_status(200)  # 使 RESTful 接口错误总是返回成功
+            self.set_status(200)  # 使 RESTful 接口错误总是返回成功(200 OK)
             self.set_header("Content-Type", "application/json; charset=UTF-8")
             self.finish(six.text_type(e))
         except Exception:
@@ -106,8 +106,7 @@ class RESTfulHTTPError(HTTPError):
 
 
 class DefaultRESTfulHandler(RESTfulHandler):
-    """
-        不存在的RESTfultHandler请求都返回JSON格式404错误
+    """ 不存在的RESTfultHandler请求都返回JSON格式404错误
         *** 在相应的urls最末行设置如(r".*", DefaultRESTfulHandler)路由即可
     """
 
