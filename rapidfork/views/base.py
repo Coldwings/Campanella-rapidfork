@@ -18,7 +18,12 @@ def tojson(data, ensure_ascii=True, default=False, **kwargs):
         raise TypeError
 
     _default = serializable if default else None
-    return json.dumps(data, ensure_ascii=ensure_ascii, default=_default, separators=(',', ':'), **kwargs).replace("</", "<\\/")
+    return json.dumps(data,
+                      ensure_ascii=ensure_ascii,
+                      default=_default,
+                      separators=(',', ':'),
+                      **
+                      kwargs).replace("</", "<\\/")
 
 
 class RESTfulHandler(RequestHandler):
@@ -60,7 +65,8 @@ class RESTfulHandler(RequestHandler):
                 e = RESTfulHTTPError(e.status_code)
             else:
                 e = RESTfulHTTPError(500)
-            exception = "".join([ln for ln in traceback.format_exception(*exc_info)])
+            exception = "".join([ln for ln in traceback.format_exception(
+                *exc_info)])
             if status_code == 500 and not debug:
                 pass
             if debug:
@@ -71,24 +77,30 @@ class RESTfulHandler(RequestHandler):
             self.finish(six.text_type(e))
         except Exception:
             logging.error(traceback.format_exc())
-            return super(RESTfulHandler, self).write_error(status_code, **kwargs)
+            return super(RESTfulHandler, self).write_error(status_code, **
+                                                           kwargs)
 
 
 class RESTfulHTTPError(HTTPError):
     """ API 错误异常模块：
         API服务器产生内部服务器错误时总是向客户返回JSON格式的数据.
     """
-    _error_types = {400: "参数错误",
-                    401: "认证失败",
-                    403: "未经授权",
-                    404: "接口不存在",
-                    405: "未许可的方法",
-                    500: "服务器错误"}
+    _error_types = {
+        400: "参数错误",
+        401: "认证失败",
+        403: "未经授权",
+        404: "终端错误",
+        405: "未许可的方法",
+        500: "服务器错误"
+    }
 
     def __init__(self, status_code=400, error_detail="", error_type="", content="", log_message=None, *args):
-        super(RESTfulHTTPError, self).__init__(int(status_code), log_message, *args)
+        super(RESTfulHTTPError, self).__init__(int(status_code), log_message, *
+                                               args)
         self.error_detail = error_detail
-        self.error = {'type': error_type} if error_type else {'type': self._error_types.get(self.status_code, "未知错误")}
+        self.error = {'type': error_type} if error_type else {
+            'type': self._error_types.get(self.status_code, "未知错误")
+        }
         self.content = content if content else {}
 
     def __str__(self):
@@ -112,4 +124,4 @@ class DefaultRESTfulHandler(RESTfulHandler):
 
     def prepare(self):
         super(DefaultRESTfulHandler, self).prepare()
-        raise RESTfulHTTPError(404)
+        raise RESTfulHTTPError(403)

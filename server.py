@@ -18,8 +18,9 @@ if __name__ == "__main__":
     tornado.options.parse_command_line()
     server = tornado.httpserver.HTTPServer(get_application(options.debug))
     server.bind(options.port)
-    print('Server is running at http://127.0.0.1:%d/ with %d processes.' % (options.port, options.num))
-    print('Debug mode %s'%('on' if options.debug else 'off'))
+    print('Server is running at http://127.0.0.1:%d/ with %d processes.' %
+          (options.port, options.num))
+    print('Debug mode %s' % ('on' if options.debug else 'off'))
     print('Quit the server with CONTROL-C')
     server.start(num_processes=options.num if not options.debug else 1)
     print('[pid=%d] Working' % os.getpid())

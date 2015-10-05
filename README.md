@@ -42,3 +42,9 @@ server.py
 settings.py
 urls.py
 ```
+
+## 参与要求
+
+1. 务必做好PEP8检查，提交前请用yapf之类的工具进行代码整理，保证格式正确
+2. 使用RESTful编写API，尽可能实现异步
+3. 使用sqlalchemy作为ORM
