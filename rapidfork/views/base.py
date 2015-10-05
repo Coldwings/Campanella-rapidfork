@@ -18,7 +18,12 @@ def tojson(data, ensure_ascii=True, default=False, **kwargs):
         raise TypeError
 
     _default = serializable if default else None
-    return json.dumps(data, ensure_ascii=ensure_ascii, default=_default, separators=(',', ':'), **kwargs).replace("</", "<\\/")
+    return json.dumps(data,
+                      ensure_ascii=ensure_ascii,
+                      default=_default,
+                      separators=(',', ':'),
+                      **
+                      kwargs).replace("</", "<\\/")
 
 
 class RESTfulHandler(RequestHandler):
@@ -41,11 +46,14 @@ class RESTfulHandler(RequestHandler):
             self.set_header("Content-Type", "application/x-javascript")
             if isinstance(chunk, dict):
                 chunk = tojson(chunk, default=True, ensure_ascii=False)
-            setattr(self, '_write_buffer', [callback, "(", chunk, ")"] if chunk else [])
+            setattr(self, '_write_buffer', [callback, "(", chunk, ")"]
+                    if chunk else [])
             super(RESTfulHandler, self).finish()
         else:
             self.set_header("Content-Type", "application/json; charset=UTF-8")
-            super(RESTfulHandler, self).finish(tojson(chunk, default=True, ensure_ascii=False))
+            super(RESTfulHandler, self).finish(tojson(chunk,
+                                                      default=True,
+                                                      ensure_ascii=False))
 
     def write_error(self, status_code, **kwargs):
         """覆盖自定义错误."""
@@ -59,7 +67,8 @@ class RESTfulHandler(RequestHandler):
                 e = RESTfulHTTPError(e.status_code)
             else:
                 e = RESTfulHTTPError(500)
-            exception = "".join([ln for ln in traceback.format_exception(*exc_info)])
+            exception = "".join([ln for ln in traceback.format_exception(
+                *exc_info)])
             if status_code == 500 and not debug:
                 pass
             if debug:
@@ -70,24 +79,30 @@ class RESTfulHandler(RequestHandler):
             self.finish(six.text_type(e))
         except Exception:
             logging.error(traceback.format_exc())
-            return super(RESTfulHandler, self).write_error(status_code, **kwargs)
+            return super(RESTfulHandler, self).write_error(status_code, **
+                                                           kwargs)
 
 
 class RESTfulHTTPError(HTTPError):
     """ API 错误异常模块：
         API服务器产生内部服务器错误时总是向客户返回JSON格式的数据.
     """
-    _error_types = {400: "参数错误",
-                    401: "认证失败",
-                    403: "未经授权",
-                    404: "终端错误",
-                    405: "未许可的方法",
-                    500: "服务器错误"}
+    _error_types = {
+        400: "参数错误",
+        401: "认证失败",
+        403: "未经授权",
+        404: "终端错误",
+        405: "未许可的方法",
+        500: "服务器错误"
+    }
 
     def __init__(self, status_code=400, error_detail="", error_type="", content="", log_message=None, *args):
-        super(RESTfulHTTPError, self).__init__(int(status_code), log_message, *args)
+        super(RESTfulHTTPError, self).__init__(int(status_code), log_message, *
+                                               args)
         self.error_detail = error_detail
-        self.error = {'type': error_type} if error_type else {'type': self._error_types.get(self.status_code, "未知错误")}
+        self.error = {'type': error_type} if error_type else {
+            'type': self._error_types.get(self.status_code, "未知错误")
+        }
         self.content = content if content else {}
 
     def __str__(self):

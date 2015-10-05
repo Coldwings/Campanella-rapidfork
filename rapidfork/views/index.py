@@ -11,8 +11,7 @@ class MainHandler(RequestHandler):
     def get(self):
         data = json.dumps(dict(
             greetings=r'Hello, Campanella!',
-            pid=os.getpid()
-        ))
+            pid=os.getpid()))
         self.write(data)
 
 
