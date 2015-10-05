@@ -31,7 +31,7 @@ class RESTfulHandler(RequestHandler):
         pass
 
     def check_xsrf_cookie(self):
-        """ RESTful 禁用 XSRF 保护机制"""
+        """ RESTful 禁用 XSRF 保护机制 """
         pass
 
     def finish(self, chunk=None, message=None):
@@ -39,11 +39,21 @@ class RESTfulHandler(RequestHandler):
             chunk = {}
         if isinstance(chunk, dict):
             chunk = {"code": self._status_code, "content": chunk}
-        if message:
-            chunk["message"] = message
+            if message:
+                chunk["message"] = message
+            chunk = tojson(chunk, default=True, ensure_ascii=False)
+        else:
+            chunk = six.text_type(chunk)
         callback = escape.utf8(self.get_argument("callback", None))
         if callback:
             self.set_header("Content-Type", "application/x-javascript")
+<<<<<<< HEAD
+            setattr(self, '_write_buffer', [callback, "(", chunk, ")"] if chunk else [])
+            super(RESTfulHandler, self).finish()
+        else:
+            self.set_header("Content-Type", "application/json; charset=UTF-8")
+            super(RESTfulHandler, self).finish(chunk)
+=======
             if isinstance(chunk, dict):
                 chunk = tojson(chunk, default=True, ensure_ascii=False)
             setattr(self, '_write_buffer', [callback, "(", chunk, ")"]
@@ -54,6 +64,7 @@ class RESTfulHandler(RequestHandler):
             super(RESTfulHandler, self).finish(tojson(chunk,
                                                       default=True,
                                                       ensure_ascii=False))
+>>>>>>> master
 
     def write_error(self, status_code, **kwargs):
         """覆盖自定义错误."""
@@ -74,7 +85,7 @@ class RESTfulHandler(RequestHandler):
             if debug:
                 e.error["exception"] = exception
             self.clear()
-            self.set_status(200)
+            self.set_status(200)  # 使 RESTful 接口错误总是返回成功(200 OK)
             self.set_header("Content-Type", "application/json; charset=UTF-8")
             self.finish(six.text_type(e))
         except Exception:
@@ -117,3 +128,13 @@ class RESTfulHTTPError(HTTPError):
             v = getattr(self, name)
             if v:
                 err[name] = v
+
+
+class DefaultRESTfulHandler(RESTfulHandler):
+    """ 不存在的RESTfultHandler请求都返回JSON格式404错误
+        *** 在相应的urls最末行设置如(r".*", DefaultRESTfulHandler)路由即可
+    """
+
+    def prepare(self):
+        super(DefaultRESTfulHandler, self).prepare()
+        raise RESTfulHTTPError(403)
