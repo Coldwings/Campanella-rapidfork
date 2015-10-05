@@ -47,11 +47,24 @@ class RESTfulHandler(RequestHandler):
         callback = escape.utf8(self.get_argument("callback", None))
         if callback:
             self.set_header("Content-Type", "application/x-javascript")
+<<<<<<< HEAD
             setattr(self, '_write_buffer', [callback, "(", chunk, ")"] if chunk else [])
             super(RESTfulHandler, self).finish()
         else:
             self.set_header("Content-Type", "application/json; charset=UTF-8")
             super(RESTfulHandler, self).finish(chunk)
+=======
+            if isinstance(chunk, dict):
+                chunk = tojson(chunk, default=True, ensure_ascii=False)
+            setattr(self, '_write_buffer', [callback, "(", chunk, ")"]
+                    if chunk else [])
+            super(RESTfulHandler, self).finish()
+        else:
+            self.set_header("Content-Type", "application/json; charset=UTF-8")
+            super(RESTfulHandler, self).finish(tojson(chunk,
+                                                      default=True,
+                                                      ensure_ascii=False))
+>>>>>>> master
 
     def write_error(self, status_code, **kwargs):
         """覆盖自定义错误."""
